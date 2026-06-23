@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Space Grotesk", "Inter", sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-brand-purple: #8b5cf6;
+  --color-brand-violet: #6d28d9;
+  --color-brand-cyan: #06b6d4;
+  --color-theme-dark: #090a0f;
+  --color-theme-card: #12131a;
+  --color-theme-border: #1e2230;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-theme-dark);
+    font-family: var(--font-sans);
+    color: #f3f4f6;
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+}
+
+/* Custom background grid styling */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.glow-purple {
+  box-shadow: 0 0 40px -5px rgba(139, 92, 246, 0.25);
+}
+
+.glow-red {
+  box-shadow: 0 0 40px -5px rgba(239, 68, 68, 0.35);
+}
+
+/* Animations pulse for critical items */
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+.pulse-red-ring {
+  animation: pulse-ring 2s infinite ease-in-out;
+}

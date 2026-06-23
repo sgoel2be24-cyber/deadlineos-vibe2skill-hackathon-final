@@ -1,0 +1,10 @@
+{
+  "name": "Remix: DeadlineOS",
+  "description": "DeadlineOS is an AI Deadline Rescue Agent that turns messy task dumps and chaotic schedules into structured, adaptive rescue plans.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
