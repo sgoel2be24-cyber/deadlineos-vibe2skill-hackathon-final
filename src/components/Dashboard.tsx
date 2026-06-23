@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   RescuePlan, 
-  TaskState, 
-  MicroAction,
   ReplanEvent
 } from '../types';
 import { 
@@ -20,13 +18,10 @@ import {
   AlertTriangle, 
   RefreshCcw, 
   Copy, 
-  ArrowRight,
   Info,
   Layers,
   FileCode,
   CornerDownRight,
-  UserCheck,
-  Plus
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -267,7 +262,7 @@ export default function Dashboard({
             <ul className="space-y-3">
               {plan.conflictWarnings.map((warning, i) => (
                 <li key={i} className="text-xs text-yellow-500 leading-relaxed font-sans flex items-start space-x-2">
-                  <span className="text-yellow-500 select-none mt-0.5">•</span>
+                  <span className="text-yellow-500 select-none mt-0.5">-</span>
                   <span>{warning}</span>
                 </li>
               ))}
@@ -610,7 +605,7 @@ export default function Dashboard({
             className="w-full sm:w-auto px-5 py-3.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 active:scale-95 transition-all text-center cursor-pointer shrink-0"
           >
             <Clock className="w-4 h-4 shrink-0 animate-pulse" />
-            <span>I'm Exhausted — Replan with Low Energy</span>
+            <span>I'm Exhausted - Replan with Low Energy</span>
           </button>
         </div>
       </div>

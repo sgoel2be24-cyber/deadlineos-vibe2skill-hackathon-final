@@ -1,64 +1,110 @@
-# DeadlineOS 🚀
+# DeadlineOS
 
-*Turn deadline chaos into an executable rescue plan.*
+Turn deadline chaos into an executable rescue plan.
 
-**DeadlineOS** is an intelligent AI Deadline Rescue Agent built for the **Vibe2Ship / Vibe2Skill Hackathon**. It is specifically designed to solve the problem statement: **"The Last-Minute Life Saver."**
+DeadlineOS is an AI Deadline Rescue Agent built for the **Vibe2Ship / Vibe2Skill Hackathon** problem statement **The Last-Minute Life Saver**.
 
----
+Live app: [https://remix-deadlineos-351292995406.asia-southeast1.run.app](https://remix-deadlineos-351292995406.asia-southeast1.run.app/)
 
-## 📌 Problem Statement Selected
-**"The Last-Minute Life Saver"**
-* **The Conflict:** Students, professionals, and entrepreneurs frequently miss deadlines. Traditional productivity tools (like standard calendars and checklist apps) function as *passive reminders*—they alarm you only when a deadline has arrived or spam notifications about overdue assignments, but do not help you plan, prioritize, bypass cognitive panic, or construct practical micro-action paths.
-* **The Consequence:** Unstructured backlogs generate completion paralysis, causing users to get stuck, delayed, and ultimately miss crucial milestones.
+GitHub: [https://github.com/sgoel2be24-cyber/DeadlineOS-vibe2skill-hackathon-](https://github.com/sgoel2be24-cyber/DeadlineOS-vibe2skill-hackathon-)
 
----
+## Solution Overview
 
-## 💡 Solution: DeadlineOS
-**DeadlineOS** acts as an *Active AI Rescue Agent*. Rather than nagging you with more alarms, it takes a messy, unformatted, natural language text dump of tasks, upcoming meetings, bill due dates, and fatigue factors. It then:
-1. **Detects Deadline Risks:** Predicts timing clashes and flags overall risk profiles (Low, Medium, High, or Critical).
-2. **Promotes a "Do This Now" Hero Target:** Pinpoints the single absolute highest-consequence active deliverable and highlights it on an impossible-to-miss visual canvas, curing decision fatigue.
-3. **Creates Micro-Action Checklists:** Splits intimidating 4-hour jobs into fast, realistic 15-minute milestones.
-4. **Delivers Smart Communications Drafts:** Generates context-appropriate Slack/Teams/Email templates for setting boundaries, explaining delays, or requesting feedback.
-5. **Enables One-Click Adaptive Replanning:** Adapts on-demand when the user clicks **Done**, **Delayed**, **Stuck**, **Skipped**, or **I'm Exhausted**—dynamically shifting timeline intervals and introducing unblocking actions.
+Students, working professionals, and founders often miss deadlines because normal reminder tools only alert them after the work is already urgent. DeadlineOS acts like an active rescue agent: the user dumps a messy list of tasks, fatigue level, meetings, bills, and deadlines, and the app instantly turns that chaos into a practical plan.
 
----
+The current hackathon build is intentionally optimized for a fast, stable demo. It runs in local fallback mode with curated crisis presets and does not require a Gemini API key.
 
-## 🛠️ Technologies Used
-* **Frontend Sandbox:** React 19, TypeScript, Tailwind CSS, Lucide icons, Motion layout transitions.
-* **Backend Server:** Node.js, Express, `tsx` runner, `esbuild` deployment bundler.
-* **Speech Integration:** Browser Web Speech API for voice-activated messy task dumps.
-* **AI Engine:** `@google/genai` (Official modern TypeScript SDK) with graceful Server-Side Fallbacks.
+## Key Features
 
----
+- Landing page with a clear launch flow
+- Student Crisis, Working Professional, and Entrepreneur demo presets
+- Fast local analysis that renders in about 1 second
+- AI Deadline Rescue Plan dashboard
+- Overall risk badge and Do This Now priority card
+- Agent observation and conflict alerts
+- Rescue schedule with Google Calendar deep links
+- Task cards with micro-action checklists
+- Done, Delayed, Stuck, and Skipped task controls
+- Low-energy replanning with event log
+- Smart communication drafts
+- Voice input button with graceful unsupported-browser handling
+- Works without authentication, a database, paid services, or API keys
 
-## 🛡️ Google Technologies Leveraged
-* **@google/genai SDK Integration:** Built with server-side proxy routes to bypass direct browser-key exposures, querying the native `gemini-3.5-flash` model utilizing robust system instructions and structural JSON output parsers.
-* **Google Calendar deep-links:** Exposes one-click template calendars mapping out specific recovery schedules directly on Google Calendar without requiring user OAuth setups.
+## Google Technologies Used
 
----
+- Google AI Studio Build Mode
+- Google AI Studio / Cloud Run deployment
+- Gemini-ready agent architecture
+- Google Calendar deep links
 
-## 🏎️ 60-Second Demo Walkthrough for Judges
-1. **Launch the Demo console:** Click **"Launch Demo Console"** on the splash screen.
-2. **Choose a Preset Crisis:** Click one of the three pre-designed hackathon crisis select keys:
-   * 🎓 **Student Crisis:** (DSA homework tonight, electricity bill due, group meeting sync collisions, low energy).
-   * 💼 **Corporate Lead:** (Client deck at 6 PM, weekly sync at 4 PM, inbox backlog, fatigue).
-   * 🚀 **Founder Mode:** (Investor pitch deck, live customer demo, tax gateway due tonight).
-3. **Analyze Bandwidths:** Click **"Analyze My Tasks & Build Rescue Plan"**.
-4. **See the Rescue Profile:** Review the newly generated visual timeline:
-   * Check off items in the **Active Task Breakdown** and watch priorities cross out.
-   * View the prominent red-alert **Do This Now** Hero Card.
-5. **Simulate a Replan Event:** Click **"I'm Stuck"** or **"I'm Exhausted"** in the replanning panel. Notice how the agent state immediately registers the incident into the chronic cron ledger, introduces unblocking guidelines, and scales focus ranges dynamically.
+## Tech Stack
 
----
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- Lucide React icons
+- Node.js and Express
+- esbuild production server bundle
 
-## ⚙️ Environment Variables Setup
+## Demo Flow
 
-Create a `.env` file in the root directory to activate the dynamic server-side Gemini API routing:
+1. Open the live app or run it locally.
+2. Click **Launch Deadline Rescue Agent**.
+3. Select **Student Crisis**, **Working Professional**, or **Entrepreneur**.
+4. Click **Analyze My Tasks & Build Rescue Plan**.
+5. Review the risk badge, Do This Now card, schedule, tasks, drafts, and recommendations.
+6. Mark tasks as Done, Delayed, Stuck, or Skipped.
+7. Click **I'm Exhausted - Replan with Low Energy** to simulate adaptive replanning.
+8. Use Google Calendar export links for schedule blocks.
 
-```env
-# Required for real AI text diagnostics
-GEMINI_API_KEY="your_google_ai_studio_api_key_here"
+## Local Setup
 
-# Automatic service endpoint callback
-APP_URL="http://localhost:3000"
+```bash
+npm install
+npm run dev
 ```
+
+The local dev server starts from `server.ts` and serves the Vite app through Express.
+
+## Build
+
+```bash
+npm run build
+npm start
+```
+
+The production build creates static Vite assets and bundles the Express server to `dist/server.cjs`.
+
+## Environment Variables
+
+No environment variables are required for the current fallback demo mode.
+
+`.env` files are ignored by Git. `.env.example` is included only as a future integration reference.
+
+## Fallback / Demo Mode
+
+The current version always uses local fallback rescue plans. This keeps the app fast, stable, and reliable for judging:
+
+- No Gemini API call is required.
+- Analyze does not wait on slow network responses.
+- The app remains usable without secrets.
+- Demo presets map to curated local rescue plans in `src/demoData.ts`.
+- Custom user input falls back to a generic rescue plan.
+
+## Future Gemini API Integration Plan
+
+After the hackathon demo phase, Gemini can be enabled behind the existing agent architecture:
+
+1. Add a server-only Gemini client guarded by `GEMINI_API_KEY`.
+2. Keep the current local fallback as the timeout and error path.
+3. Validate Gemini JSON responses against the `RescuePlan` shape before rendering.
+4. Use a short timeout so Analyze never blocks the demo experience.
+5. Never expose API keys in the browser.
+
+## Security Notes
+
+- No secrets are committed.
+- `.env` and `.env.*` are ignored.
+- `.env.example` contains placeholders only.
+- The app does not use authentication or a database in this phase.

@@ -64,7 +64,7 @@ export default function LandingPage({ onStartDemo }: LandingPageProps) {
         </h1>
         
         <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed font-light">
-          Your Intelligent Deadline Rescue Agent. Dump your messy schedules, pending items, and active energy levels—then let AI structure your day, pinpoint risks, and tell you exactly what to do <span className="text-white font-medium underline decoration-brand-purple decoration-2">right now</span>.
+          Your Intelligent Deadline Rescue Agent. Dump your messy schedules, pending items, and active energy levels, then let AI structure your day, pinpoint risks, and tell you exactly what to do <span className="text-white font-medium underline decoration-brand-purple decoration-2">right now</span>.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -123,7 +123,7 @@ export default function LandingPage({ onStartDemo }: LandingPageProps) {
               </li>
               <li className="flex items-start space-x-3 text-sm text-gray-300">
                 <span className="text-red-500 font-extrabold mt-0.5">✕</span>
-                <span>They ignore physical reality—fatigue, brain fog, and overlapping timings.</span>
+                <span>They ignore physical reality: fatigue, brain fog, and overlapping timings.</span>
               </li>
               <li className="flex items-start space-x-3 text-sm text-gray-300">
                 <span className="text-red-500 font-extrabold mt-0.5">✕</span>

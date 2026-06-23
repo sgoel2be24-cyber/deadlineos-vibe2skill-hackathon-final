@@ -10,6 +10,65 @@ export interface DemoCase {
   rescuePlan: RescuePlan;
 }
 
+export const genericFallbackPlan: RescuePlan = {
+  risk: 'medium',
+  doThisNow: {
+    title: 'Identify Immediate Quick Wins',
+    explanation: 'Your tasks are diverse. Isolate the smallest single visual milestone, and complete it in 15 minutes to clear initial drag.',
+    durationMinutes: 15
+  },
+  observation: 'Custom schedule loaded successfully. To de-escalate crisis, priorities have been optimized against your stated time limits.',
+  conflictWarnings: ['Review overlapping appointments in your direct calendar manually.'],
+  schedule: [
+    {
+      id: 'g-1',
+      time: '13:00 - 13:15',
+      taskTitle: 'Initialize Quickest Task Win',
+      duration: '15 min',
+      description: 'Knock out rapid low-weight tasks to unlock active achievement neurons.',
+      category: 'Focus'
+    },
+    {
+      id: 'g-2',
+      time: '13:15 - 15:30',
+      taskTitle: 'Critical Sprint Session',
+      duration: '2h 15m',
+      description: 'Maintain exclusive priority focus. Eliminate phone notifications.',
+      category: 'Deep Work'
+    }
+  ],
+  tasks: [
+    {
+      id: 't-g-1',
+      title: 'Primary Custom Priority Block',
+      priority: 'high',
+      done: false,
+      delayed: false,
+      stuck: false,
+      skipped: false,
+      deadline: 'Today',
+      category: 'Deep Work',
+      microActions: [
+        { id: 'mg-ea-1', text: 'Identify the first actionable checklist step', completed: false },
+        { id: 'mg-ea-2', text: 'Lock in 25 minutes of standalone flow', completed: false }
+      ]
+    }
+  ],
+  drafts: [
+    {
+      id: 'd-g-1',
+      title: 'Delegate / Rescheduling Request',
+      recipient: 'Colleagues / Team Lead',
+      type: 'message',
+      content: 'Hey Team, I am running a high-priority sprint to close out an urgent roadmap target today. I will be slow to respond to chats/emails until 4:30 PM. For critical emergency blockers, call me directly!'
+    }
+  ],
+  recommendations: [
+    'Avoid multi-tasking. Focus completely on the active Pomodoro element to bypass gridlocks.',
+    'Keep water nearby to maintain cognitive performance.'
+  ]
+};
+
 export const demoCases: DemoCase[] = [
   {
     key: 'student',
@@ -500,3 +559,46 @@ export const demoCases: DemoCase[] = [
     }
   }
 ];
+
+function clonePlan(plan: RescuePlan): RescuePlan {
+  return JSON.parse(JSON.stringify(plan));
+}
+
+export function getFallbackRescuePlan(input: string): RescuePlan {
+  const matchText = input.toLowerCase();
+  const studentCase = demoCases.find(c => c.key === 'student');
+  const professionalCase = demoCases.find(c => c.key === 'professional');
+  const entrepreneurCase = demoCases.find(c => c.key === 'entrepreneur');
+
+  if (
+    studentCase &&
+    (matchText.includes('dsa assignment') ||
+      matchText.includes('student crisis') ||
+      matchText.includes('electricity bill') ||
+      matchText.includes('student'))
+  ) {
+    return clonePlan(studentCase.rescuePlan);
+  }
+
+  if (
+    professionalCase &&
+    (matchText.includes('client presentation') ||
+      matchText.includes('working professional') ||
+      matchText.includes('doctor appointment') ||
+      matchText.includes('professional') ||
+      matchText.includes('emails'))
+  ) {
+    return clonePlan(professionalCase.rescuePlan);
+  }
+
+  if (
+    entrepreneurCase &&
+    (matchText.includes('pitch deck') ||
+      matchText.includes('entrepreneur') ||
+      matchText.includes('gst payment'))
+  ) {
+    return clonePlan(entrepreneurCase.rescuePlan);
+  }
+
+  return clonePlan(genericFallbackPlan);
+}
