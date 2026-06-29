@@ -49,6 +49,8 @@ export interface RescuePlan {
   recommendations: string[];
 }
 
+export type AnalysisMode = 'demo' | 'gemini' | 'fallback';
+
 export interface ReplanEvent {
   event: string;
   time: string;

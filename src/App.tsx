@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import LandingPage from './components/LandingPage';
 import Workspace from './components/Workspace';
 import Dashboard from './components/Dashboard';
-import { AgentState, RescuePlan, ReplanEvent } from './types';
+import { AgentState, AnalysisMode, RescuePlan, ReplanEvent } from './types';
 import { demoCases, getFallbackRescuePlan } from './demoData';
 import { Flame, Sparkles, LogOut, Code } from 'lucide-react';
 
@@ -78,6 +78,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [rescuePlan, setRescuePlan] = useState<RescuePlan | null>(null);
   const [lastValidPlan, setLastValidPlan] = useState<RescuePlan | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('fallback');
   const [replanNotice, setReplanNotice] = useState<string | null>(null);
   const [replanError, setReplanError] = useState<string | null>(null);
 
@@ -85,12 +86,17 @@ export default function App() {
   const [currentRunId, setCurrentRunId] = useState<number>(0);
   const runIdRef = React.useRef<number>(0);
   const activeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const activeAbortRef = React.useRef<AbortController | null>(null);
 
   const handleSelectDemo = (demo: 'student' | 'professional' | 'entrepreneur' | null) => {
     // Switch demo preset immediately: clear loading, reset current rescuePlan state
     if (activeTimerRef.current) {
       clearTimeout(activeTimerRef.current);
       activeTimerRef.current = null;
+    }
+    if (activeAbortRef.current) {
+      activeAbortRef.current.abort();
+      activeAbortRef.current = null;
     }
     setIsLoading(false);
     setRescuePlan(null);
@@ -130,6 +136,10 @@ export default function App() {
       clearTimeout(activeTimerRef.current);
       activeTimerRef.current = null;
     }
+    if (activeAbortRef.current) {
+      activeAbortRef.current.abort();
+      activeAbortRef.current = null;
+    }
 
     // 4. Safe run ID request guard
     const runId = Date.now();
@@ -150,13 +160,80 @@ export default function App() {
     };
     setAgentState(initialAgentState);
 
+    const loadPlan = (planData: RescuePlan, mode: AnalysisMode) => {
+      planData.schedule = generateDynamicTimeline(planData.schedule);
+      setLastValidPlan(planData);
+      setRescuePlan(planData);
+      setAnalysisMode(mode);
+      setReplanNotice(null);
+      setReplanError(null);
+      setAgentState(prev => ({
+        ...prev,
+        current_time: new Date().toISOString(),
+        latest_user_message: text,
+        user_energy: energy,
+        available_time_today_minutes: timeMinutes,
+        current_task_state: planData.tasks,
+        previous_plan_summary: `Plan loaded successfully. Priority target: ${planData.doThisNow.title}. Risk: ${planData.risk}`
+      }));
+    };
+
+    const loadSafeFallback = (notice = 'Using safe fallback rescue plan.') => {
+      const fallbackPlan = getFallbackRescuePlan(text);
+      loadPlan(fallbackPlan, 'fallback');
+      setReplanError(notice);
+    };
+
+    const actualDemo = demoKey || selectedDemo;
+
+    if (!actualDemo) {
+      const controller = new AbortController();
+      activeAbortRef.current = controller;
+      const timeout = window.setTimeout(() => controller.abort(), 8500);
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(initialAgentState),
+          signal: controller.signal
+        });
+
+        if (runIdRef.current !== runId) return;
+
+        if (!response.ok) {
+          throw new Error(`Analyze failed with ${response.status}`);
+        }
+
+        const payload = await response.json();
+        if (payload?.status === 'ok' && payload?.plan) {
+          loadPlan(payload.plan, payload.mode === 'gemini' ? 'gemini' : 'fallback');
+        } else {
+          loadSafeFallback();
+        }
+      } catch (error) {
+        if (runIdRef.current === runId) {
+          console.warn('Custom analysis failed; using local fallback.', error);
+          loadSafeFallback();
+        }
+      } finally {
+        window.clearTimeout(timeout);
+        if (activeAbortRef.current === controller) {
+          activeAbortRef.current = null;
+        }
+        if (runIdRef.current === runId) {
+          setIsLoading(false);
+        }
+      }
+      return;
+    }
+
     // 2. Keep loading state short (500-1000ms animation delay, we'll use 750ms)
     const timer = setTimeout(() => {
       // 4. Validate request guard so older callbacks cannot overwrite results
       if (runIdRef.current !== runId) return;
 
       try {
-        const actualDemo = demoKey || selectedDemo;
         const studentCase = demoCases.find(c => c.key === 'student');
         const professionalCase = demoCases.find(c => c.key === 'professional');
         const entrepreneurCase = demoCases.find(c => c.key === 'entrepreneur');
@@ -175,31 +252,10 @@ export default function App() {
           planData = getFallbackRescuePlan(text);
         }
 
-        if (planData) {
-          planData.schedule = generateDynamicTimeline(planData.schedule);
-          setLastValidPlan(planData);
-          setRescuePlan(planData);
-          setReplanNotice(null);
-          setReplanError(null);
-          setAgentState(prev => ({
-            ...prev,
-            current_time: new Date().toISOString(),
-            latest_user_message: text,
-            user_energy: energy,
-            available_time_today_minutes: timeMinutes,
-            current_task_state: planData ? planData.tasks : [],
-            previous_plan_summary: planData ? `Plan loaded successfully. Priority target: ${planData.doThisNow.title}. Risk: ${planData.risk}` : prev.previous_plan_summary
-          }));
-        }
+        if (planData) loadPlan(planData, 'demo');
       } catch (error) {
         console.error('Error during fallback rescue loading:', error);
-        // 6. Error fallback
-        const studentCase = demoCases.find(c => c.key === 'student');
-        const fallbackPlan = lastValidPlan || (studentCase ? studentCase.rescuePlan : null);
-        if (fallbackPlan) {
-          setRescuePlan(JSON.parse(JSON.stringify(fallbackPlan)));
-        }
-        setReplanError('Using safe fallback rescue plan.');
+        loadSafeFallback();
       } finally {
         setIsLoading(false);
       }
@@ -530,6 +586,7 @@ export default function App() {
                 replanEvents={agentState.replan_events}
                 replanNotice={replanNotice}
                 replanError={replanError}
+                analysisMode={analysisMode}
                 onClearReplanNotice={() => {
                   setReplanNotice(null);
                   setReplanError(null);

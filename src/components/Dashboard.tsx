@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   RescuePlan, 
-  ReplanEvent
+  ReplanEvent,
+  AnalysisMode
 } from '../types';
 import { 
   createGoogleCalendarUrl, 
@@ -32,6 +33,7 @@ interface DashboardProps {
   replanEvents: ReplanEvent[];
   replanNotice?: string | null;
   replanError?: string | null;
+  analysisMode?: AnalysisMode;
   onClearReplanNotice?: () => void;
 }
 
@@ -43,6 +45,7 @@ export default function Dashboard({
   replanEvents,
   replanNotice,
   replanError,
+  analysisMode = 'fallback',
   onClearReplanNotice
 }: DashboardProps) {
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
@@ -63,6 +66,12 @@ export default function Dashboard({
     high: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
     critical: 'text-red-400 bg-red-400/10 border-red-400/30 animate-pulse'
   }[plan.risk];
+
+  const modeBadge = {
+    demo: 'Fast Demo Mode',
+    gemini: 'Gemini Analysis',
+    fallback: 'Safe Fallback Mode'
+  }[analysisMode];
 
   const handleCopyDraft = (content: string, id: string) => {
     copyToClipboard(content).then(success => {
@@ -118,6 +127,9 @@ export default function Dashboard({
               <span className="text-sm font-mono text-gray-500 uppercase">Analysis Complete</span>
               <span className={`px-2.5 py-0.5 text-xs uppercase font-extrabold tracking-wider border rounded-full ${riskColor}`}>
                 {plan.risk} Risk Detected
+              </span>
+              <span className="px-2.5 py-0.5 text-[10px] uppercase font-bold tracking-wider border rounded-full text-brand-cyan bg-brand-cyan/10 border-brand-cyan/25">
+                {modeBadge}
               </span>
             </div>
             <h2 className="text-xl font-bold font-heading text-white mt-1">AI Deadline Rescue Plan</h2>
