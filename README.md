@@ -6,7 +6,7 @@ DeadlineOS is an AI Deadline Rescue Agent built for the **Vibe2Ship / Vibe2Skill
 
 Live app: [https://remix-deadlineos-351292995406.asia-southeast1.run.app](https://remix-deadlineos-351292995406.asia-southeast1.run.app/)
 
-GitHub: [https://github.com/sgoel2be24-cyber/DeadlineOS-vibe2skill-hackathon-](https://github.com/sgoel2be24-cyber/DeadlineOS-vibe2skill-hackathon-)
+GitHub: [https://github.com/sgoel2be24-cyber/deadlineos-vibe2skill-hackathon-final](https://github.com/sgoel2be24-cyber/deadlineos-vibe2skill-hackathon-final)
 
 ## Solution Overview
 

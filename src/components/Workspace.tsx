@@ -15,11 +15,13 @@ import {
 } from 'lucide-react';
 
 interface WorkspaceProps {
-  onAnalyze: (text: string, energy: 'low' | 'medium' | 'high', timeMinutes: number) => void;
+  onAnalyze: (text: string, energy: 'low' | 'medium' | 'high', timeMinutes: number, demoKey: 'student' | 'professional' | 'entrepreneur' | null) => void;
   isLoading: boolean;
+  selectedDemo?: 'student' | 'professional' | 'entrepreneur' | null;
+  onSelectDemo?: (demo: 'student' | 'professional' | 'entrepreneur' | null) => void;
 }
 
-export default function Workspace({ onAnalyze, isLoading }: WorkspaceProps) {
+export default function Workspace({ onAnalyze, isLoading, selectedDemo = null, onSelectDemo }: WorkspaceProps) {
   const [taskInput, setTaskInput] = useState<string>('');
   const [selectedEnergy, setSelectedEnergy] = useState<'low' | 'medium' | 'high'>('medium');
   const [selectedTime, setSelectedTime] = useState<number>(300);
@@ -28,46 +30,56 @@ export default function Workspace({ onAnalyze, isLoading }: WorkspaceProps) {
   const [recognition, setRecognition] = useState<any>(null);
 
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
 
-    const rec = new SpeechRecognition();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = 'en-US';
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-US';
 
-    rec.onstart = () => {
-      setIsListening(true);
-      setSpeechError(null);
-    };
+      rec.onstart = () => {
+        setIsListening(true);
+        setSpeechError(null);
+      };
 
-    rec.onresult = (event: any) => {
-      const transcript = event.results?.[0]?.[0]?.transcript;
-      if (transcript) {
-        setTaskInput(prev => prev ? prev + ' ' + transcript : transcript);
-      }
-      setIsListening(false);
-    };
+      rec.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setTaskInput(prev => {
+            const newVal = prev ? prev + ' ' + transcript : transcript;
+            return newVal;
+          });
+          if (onSelectDemo) {
+            onSelectDemo(null);
+          }
+        }
+        setIsListening(false);
+      };
 
-    rec.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
-      setSpeechError(`Voice input error: ${event.error}. You can still type or paste your tasks.`);
-      setIsListening(false);
-    };
+      rec.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setSpeechError(`Voice input error: ${event.error}. You can still type or paste your tasks.`);
+        setIsListening(false);
+      };
 
-    rec.onend = () => {
-      setIsListening(false);
-    };
+      rec.onend = () => {
+        setIsListening(false);
+      };
 
-    setRecognition(rec);
+      setRecognition(rec);
 
-    return () => {
-      try {
-        rec.abort();
-      } catch {
-        // Some browser implementations throw if recognition was never started.
-      }
-    };
+      return () => {
+        try {
+          rec.abort();
+        } catch {
+          // Some browser implementations throw if recognition was never started.
+        }
+      };
+    } catch (err) {
+      console.warn('Speech recognition interface blocked or unsupported', err);
+    }
   }, []);
 
   const handleToggleListening = () => {
@@ -98,11 +110,14 @@ export default function Workspace({ onAnalyze, isLoading }: WorkspaceProps) {
     setSelectedEnergy(matched.energy);
     setSelectedTime(matched.availableTimeMinutes);
     setSpeechError(null);
+    if (onSelectDemo) {
+      onSelectDemo(demoKey);
+    }
   };
 
   const handleTriggerAnalysis = () => {
     if (!taskInput.trim()) return;
-    onAnalyze(taskInput, selectedEnergy, selectedTime);
+    onAnalyze(taskInput, selectedEnergy, selectedTime, selectedDemo);
   };
 
   return (
@@ -153,7 +168,12 @@ export default function Workspace({ onAnalyze, isLoading }: WorkspaceProps) {
         <div className="relative">
           <textarea
             value={taskInput}
-            onChange={(e) => setTaskInput(e.target.value)}
+            onChange={(e) => {
+              setTaskInput(e.target.value);
+              if (onSelectDemo) {
+                onSelectDemo(null);
+              }
+            }}
             placeholder="e.g. I have a presentation due tomorrow morning at 10 AM, need to buy milk, prep for product launch meeting at 3 PM today... I'm overwhelmed and exhausted..."
             className="w-full h-44 bg-[#0d0f14] text-gray-200 border border-theme-border rounded-xl p-4 pr-12 focus:outline-none focus:ring-1 focus:ring-brand-purple focus:border-brand-purple text-sm sm:text-base leading-relaxed placeholder-gray-600 transition-all font-sans"
           />

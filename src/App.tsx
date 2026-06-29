@@ -81,6 +81,22 @@ export default function App() {
   const [replanNotice, setReplanNotice] = useState<string | null>(null);
   const [replanError, setReplanError] = useState<string | null>(null);
 
+  const [selectedDemo, setSelectedDemo] = useState<'student' | 'professional' | 'entrepreneur' | null>(null);
+  const [currentRunId, setCurrentRunId] = useState<number>(0);
+  const runIdRef = React.useRef<number>(0);
+  const activeTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleSelectDemo = (demo: 'student' | 'professional' | 'entrepreneur' | null) => {
+    // Switch demo preset immediately: clear loading, reset current rescuePlan state
+    if (activeTimerRef.current) {
+      clearTimeout(activeTimerRef.current);
+      activeTimerRef.current = null;
+    }
+    setIsLoading(false);
+    setRescuePlan(null);
+    setSelectedDemo(demo);
+  };
+
   const [agentState, setAgentState] = useState<AgentState>({
     current_time: new Date().toISOString(),
     latest_user_message: '',
@@ -103,34 +119,93 @@ export default function App() {
     }, 50);
   };
 
-  const handleAnalyze = async (text: string, energy: 'low' | 'medium' | 'high', timeMinutes: number) => {
+  const handleAnalyze = async (
+    text: string,
+    energy: 'low' | 'medium' | 'high',
+    timeMinutes: number,
+    demoKey: 'student' | 'professional' | 'entrepreneur' | null = null
+  ) => {
+    // 1. Clear any active loading timers
+    if (activeTimerRef.current) {
+      clearTimeout(activeTimerRef.current);
+      activeTimerRef.current = null;
+    }
+
+    // 4. Safe run ID request guard
+    const runId = Date.now();
+    setCurrentRunId(runId);
+    runIdRef.current = runId;
+
     setIsLoading(true);
     setRescuePlan(null);
 
-    try {
-      const planData = getFallbackRescuePlan(text);
-      planData.schedule = generateDynamicTimeline(planData.schedule);
+    const initialAgentState = {
+      current_time: new Date().toISOString(),
+      latest_user_message: text,
+      user_energy: energy,
+      available_time_today_minutes: timeMinutes,
+      previous_plan_summary: rescuePlan ? `Prior plan summary. Target: ${rescuePlan.doThisNow.title}` : 'No previous plan yet',
+      current_task_state: rescuePlan ? rescuePlan.tasks : [],
+      replan_events: agentState.replan_events
+    };
+    setAgentState(initialAgentState);
 
-      setLastValidPlan(planData);
-      setRescuePlan(planData);
-      setReplanNotice(null);
-      setReplanError(null);
-      setAgentState(prev => ({
-        ...prev,
-        current_time: new Date().toISOString(),
-        latest_user_message: text,
-        user_energy: energy,
-        available_time_today_minutes: timeMinutes,
-        current_task_state: planData.tasks,
-        previous_plan_summary: `Plan loaded successfully. Priority target: ${planData.doThisNow.title}. Risk: ${planData.risk}`
-      }));
-    } catch (error) {
-      console.error('Fallback analysis failed gracefully:', error);
-      setRescuePlan(lastValidPlan);
-      setReplanError('Analysis could not refresh, but your last rescue plan is still available.');
-    } finally {
-      window.setTimeout(() => setIsLoading(false), 650);
-    }
+    // 2. Keep loading state short (500-1000ms animation delay, we'll use 750ms)
+    const timer = setTimeout(() => {
+      // 4. Validate request guard so older callbacks cannot overwrite results
+      if (runIdRef.current !== runId) return;
+
+      try {
+        const actualDemo = demoKey || selectedDemo;
+        const studentCase = demoCases.find(c => c.key === 'student');
+        const professionalCase = demoCases.find(c => c.key === 'professional');
+        const entrepreneurCase = demoCases.find(c => c.key === 'entrepreneur');
+
+        let planData: RescuePlan | null = null;
+
+        // 1 & 5. Map selected presets or search patterns for generic customized inputs
+        if (actualDemo === 'student' && studentCase) {
+          planData = JSON.parse(JSON.stringify(studentCase.rescuePlan));
+        } else if ((actualDemo === 'professional' || actualDemo === 'working') && professionalCase) {
+          planData = JSON.parse(JSON.stringify(professionalCase.rescuePlan));
+        } else if (actualDemo === 'entrepreneur' && entrepreneurCase) {
+          planData = JSON.parse(JSON.stringify(entrepreneurCase.rescuePlan));
+        } else {
+          // Manual input lookup matches text patterns or backs up to local genericFallbackPlan
+          planData = getFallbackRescuePlan(text);
+        }
+
+        if (planData) {
+          planData.schedule = generateDynamicTimeline(planData.schedule);
+          setLastValidPlan(planData);
+          setRescuePlan(planData);
+          setReplanNotice(null);
+          setReplanError(null);
+          setAgentState(prev => ({
+            ...prev,
+            current_time: new Date().toISOString(),
+            latest_user_message: text,
+            user_energy: energy,
+            available_time_today_minutes: timeMinutes,
+            current_task_state: planData ? planData.tasks : [],
+            previous_plan_summary: planData ? `Plan loaded successfully. Priority target: ${planData.doThisNow.title}. Risk: ${planData.risk}` : prev.previous_plan_summary
+          }));
+        }
+      } catch (error) {
+        console.error('Error during fallback rescue loading:', error);
+        // 6. Error fallback
+        const studentCase = demoCases.find(c => c.key === 'student');
+        const fallbackPlan = lastValidPlan || (studentCase ? studentCase.rescuePlan : null);
+        if (fallbackPlan) {
+          setRescuePlan(JSON.parse(JSON.stringify(fallbackPlan)));
+        }
+        setReplanError('Using safe fallback rescue plan.');
+      } finally {
+        setIsLoading(false);
+      }
+    }, 750);
+
+    activeTimerRef.current = timer;
   };
 
   const handleToggleMicroaction = (taskId: string, microActionId: string) => {
@@ -427,7 +502,12 @@ export default function App() {
               </div>
             </div>
 
-            <Workspace onAnalyze={handleAnalyze} isLoading={isLoading} />
+            <Workspace
+              onAnalyze={handleAnalyze}
+              isLoading={isLoading}
+              selectedDemo={selectedDemo}
+              onSelectDemo={handleSelectDemo}
+            />
           </section>
 
           <section className="relative">
